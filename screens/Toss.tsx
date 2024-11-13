@@ -23,6 +23,7 @@ const Toss = ({ navigation }: any) => {
   // Charger les données depuis AsyncStorage
   useEffect(() => {
     const loadTeams = async () => {
+      console.log('coucou')
       try {
         const storedTeamOne = await AsyncStorage.getItem('teamOne');
         const storedTeamTwo = await AsyncStorage.getItem('teamTwo');
