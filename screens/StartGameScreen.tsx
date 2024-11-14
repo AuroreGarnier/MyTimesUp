@@ -5,6 +5,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage'; // Importe
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Importation des icônes
 
 const StartGameScreen = ({ navigation }: any) => {
+  
+  const [cardsNumber, setCardsNumber] = useState('');
+  const [selectedCards, setSelectedCards] = useState('');
   const [teamPlaying, setTeamPlaying] = useState(''); // L'équipe qui va commencer
   const [loading, setLoading] = useState(true); // Indicateur de chargement des données
 
@@ -18,9 +21,11 @@ const StartGameScreen = ({ navigation }: any) => {
   useEffect(() => {
     const load = async () => {
       try {
-        const teamPlayingStored = await AsyncStorage.getItem('teamPlaying');
-        if (teamPlayingStored) {
-          setTeamPlaying(teamPlayingStored);
+        const data = await AsyncStorage.getItem('gameData');
+        if (data) {
+          const parsedData = JSON.parse(data);
+          setTeamPlaying(parsedData.teamPlaying);
+          setSelectedCards(parsedData.selectedCards);
         }
       } catch (error) {
         console.error("Erreur lors du chargement de l'équipe qui débute :", error);

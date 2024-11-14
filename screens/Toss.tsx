@@ -23,13 +23,14 @@ const Toss = ({ navigation }: any) => {
   // Charger les données depuis AsyncStorage
   useEffect(() => {
     const loadTeams = async () => {
-      console.log('coucou')
       try {
-        const storedTeamOne = await AsyncStorage.getItem('teamOne');
-        const storedTeamTwo = await AsyncStorage.getItem('teamTwo');
-
-        if (storedTeamOne) setTeamOne(storedTeamOne);
-        if (storedTeamTwo) setTeamTwo(storedTeamTwo);
+        const storedData = await AsyncStorage.getItem('gameData');
+      
+        if (storedData) {
+          const parsedData = JSON.parse(storedData);
+          setTeamOne(parsedData.teamOne);
+          setTeamTwo(parsedData.teamTwo);
+        }
       } catch (error) {
         console.error('Erreur lors du chargement des équipes depuis AsyncStorage:', error);
       } finally {
@@ -52,7 +53,7 @@ const Toss = ({ navigation }: any) => {
     rotatePiece();
   };
 
-  // Fonction pour animer la rotation de la pièce
+  // --------------------------- --------------------------- ANIMATION PIECE
   const rotatePiece = () => {
     // Reset la rotation
     rotateValue.setValue(0);
@@ -69,13 +70,25 @@ const Toss = ({ navigation }: any) => {
       setIsAnimationComplete(true); // L'animation est terminée, afficher le gagnant
     }, 2000); // Délai de 2 secondes
   };
+  // --------------------------- --------------------------- ---------------------------
 
   // Fonction pour aller à la page suivante (par exemple, "RoundOne")
-  const startGame = async() => {
-    // ondétermine l'équipe "en cours de jeu"
-    await AsyncStorage.setItem('teamPlaying', winner);
-    navigation.navigate('StartGame');
+  const startGame = async () => {
+    try {
+      // Récupérer les données existantes dans AsyncStorage (si elles existent)
+      const storedData = await AsyncStorage.getItem('gameData');
+      let data = {};
+  
+      if (storedData) { data = JSON.parse(storedData); }
+      data.teamPlaying = winner; // Ici, winner est l'équipe qui commence
+  
+      await AsyncStorage.setItem('gameData', JSON.stringify(data));
+      navigation.navigate('StartGame');
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de gameData:', error);
+    }
   };
+  
 
   // Interpolation pour transformer la valeur de rotation de 0 à 360° autour de l'axe Y
   const rotation = rotateValue.interpolate({

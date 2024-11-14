@@ -3,6 +3,7 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-nativ
 import { Picker } from '@react-native-picker/picker';
 import { globalStyles } from '../styles'; // Importation des styles
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Importer AsyncStorage
+import apiData from '../api'; // Importation du tableau depuis api.js
 
 const SettingsScreen = ({ navigation }: any) => {
 
@@ -12,7 +13,6 @@ const SettingsScreen = ({ navigation }: any) => {
     });
   }, [navigation]);
 
-  
   // State pour les noms des équipes et la sélection du nombre
   const [teamOne, setTeamOne] = useState('');
   const [teamTwo, setTeamTwo] = useState('');
@@ -24,13 +24,14 @@ const SettingsScreen = ({ navigation }: any) => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const storedTeamOne = await AsyncStorage.getItem('teamOne');
-        const storedTeamTwo = await AsyncStorage.getItem('teamTwo');
-        const storedCards = await AsyncStorage.getItem('cards');
-
-        if (storedTeamOne) setTeamOne(storedTeamOne);
-        if (storedTeamTwo) setTeamTwo(storedTeamTwo);
-        if (storedCards) setCardsNumber(storedCards);
+        const storedData = await AsyncStorage.getItem('gameData');
+      
+        if (storedData) {
+          const parsedData = JSON.parse(storedData);
+          setTeamOne(parsedData.teamOne);
+          setTeamTwo(parsedData.teamTwo);
+          setCardsNumber(parsedData.cardsNumber);
+        }
       } catch (error) {
         console.error('Erreur lors du chargement des données depuis AsyncStorage:', error);
       }
@@ -38,6 +39,12 @@ const SettingsScreen = ({ navigation }: any) => {
 
     loadData(); // Charger les données lors de l'initialisation de l'écran
   }, []); // [] signifie que ce useEffect se déclenche uniquement au montage de l'écran
+
+  // Fonction pour récupérer un nombre 'x' d'éléments aléatoires depuis apiData
+  const getRandomItems = (numItems: number) => {
+    const shuffled = [...apiData].sort(() => 0.5 - Math.random()); 
+    return shuffled.slice(0, numItems);
+  };
 
   // Fonction à appeler quand le bouton "Commencer" est pressé
   const handleStart = async () => {
@@ -59,10 +66,12 @@ const SettingsScreen = ({ navigation }: any) => {
 
     if (isValid) {
       try {
-        // Stocker les données dans AsyncStorage
-        await AsyncStorage.setItem('teamOne', teamOne);
-        await AsyncStorage.setItem('teamTwo', teamTwo);
-        await AsyncStorage.setItem('cards', cardsNumber);
+        const selectedCards = getRandomItems(Number(cardsNumber)); 77
+        console.log(selectedCards);7
+
+        // Enregistrer les données dans AsyncStorage
+        const data = { teamOne, teamTwo, cardsNumber, selectedCards };
+        await AsyncStorage.setItem('gameData', JSON.stringify(data));
 
         // Optionnel : pour vérifier que les données sont bien stockées
         console.log(`Team 1: ${teamOne}, Team 2: ${teamTwo}, Cards: ${cardsNumber}`);
